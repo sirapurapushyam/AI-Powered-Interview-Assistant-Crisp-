@@ -8,11 +8,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Send, AlertCircle, Trophy, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
+import { Send, AlertCircle, Trophy, CheckCircle, XCircle, RotateCcw ,User, Mail, Phone} from 'lucide-react';
 import { updateCandidateInfo, resetCandidate } from '../../store/slices/candidateSlice';
 import { resetSession } from '../../store/slices/sessionSlice';
 import { api } from '../../services/api';
-import { toast } from "react-hot-toast"
+import { toast } from "react-hot-toast";
+
 
 interface Message {
   id: string;
@@ -416,6 +417,31 @@ useEffect(() => {
     return (
       <Card className="w-full max-w-4xl mx-auto p-8 text-center">
         <h2 className="text-2xl font-semibold mb-4">Ready to Start Your Interview?</h2>
+         {currentCandidate && (
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6 max-w-md mx-auto">
+          <h3 className="font-semibold mb-3 text-left text-blue-900">Your Information:</h3>
+          <div className="space-y-2 text-left">
+            <div className="flex items-center gap-3">
+              <User className="h-4 w-4 text-blue-600 flex-shrink-0" />
+              <span className="font-medium text-gray-700 min-w-[60px]">Name:</span>
+              <span className="text-gray-900">{currentCandidate.name || 'Not provided'}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Mail className="h-4 w-4 text-blue-600 flex-shrink-0" />
+              <span className="font-medium text-gray-700 min-w-[60px]">Email:</span>
+              <span className="text-gray-900 break-all">{currentCandidate.email || 'Not provided'}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Phone className="h-4 w-4 text-blue-600 flex-shrink-0" />
+              <span className="font-medium text-gray-700 min-w-[60px]">Phone:</span>
+              <span className="text-gray-900">{currentCandidate.phone || 'Not provided'}</span>
+            </div>
+          </div>
+          {/* <p className="text-xs text-gray-600 mt-3 text-center italic">
+            Please verify this information is correct
+          </p> */}
+        </div>
+      )}
         <p className="text-gray-600 mb-6">
           You'll be asked 6 technical questions about Full Stack Development.
         </p>

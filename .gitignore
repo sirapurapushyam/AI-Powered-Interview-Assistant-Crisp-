@@ -10,6 +10,7 @@
 /Backend/.venv/
 /Backend/env/
 /Backend/ENV/
+/Backend/.env/
 
 # Python packaging
 /Backend/*.egg-info/
