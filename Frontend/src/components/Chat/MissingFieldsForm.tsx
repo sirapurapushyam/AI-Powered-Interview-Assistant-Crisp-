@@ -82,9 +82,9 @@ const MissingFieldsForm: React.FC<MissingFieldsFormProps> = ({ missingFields }) 
 
   return (
     <Card className="max-w-md mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-4">Complete Your Profile</h2>
+      <h2 className="text-2xl font-semibold mb-4">Missing Information</h2>
       <p className="text-gray-600 mb-6">
-        We need a few more details before proceeding.
+        We couldn’t parse some details from your resume. Please provide the missing information to continue.
       </p>
       
       <form onSubmit={handleSubmit} className="space-y-4">

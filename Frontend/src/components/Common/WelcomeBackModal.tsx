@@ -91,18 +91,15 @@ const WelcomeBackModal: React.FC = () => {
           <p className="text-sm">
             <strong>Time remaining on current question:</strong> {formatTimeDisplay(timeRemaining)}
           </p>
-          <p className="text-sm text-gray-600 mt-3">
+          {/* <p className="text-sm text-gray-600 mt-3">
             Would you like to continue where you left off or stop the interview?
           </p>
           <p className="text-xs text-gray-500 mt-2">
             Note: Stopping the interview will start from next question.
-          </p>
+          </p> */}
         </div>
         
         <DialogFooter>
-          <Button variant="outline" onClick={handleNewSession}>
-            Stop Interview
-          </Button>
           <Button onClick={handleResume}>
             Resume Interview
           </Button>

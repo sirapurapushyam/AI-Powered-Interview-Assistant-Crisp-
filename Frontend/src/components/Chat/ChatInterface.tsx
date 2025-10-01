@@ -1,6 +1,7 @@
+// frontend/src/components/Chat/ChatInterface.tsx
 import React, { useState, useRef, useEffect } from 'react';
 import { useAppSelector, useAppDispatch } from '../../hooks/redux';
-import { submitAnswer, startInterview,setTimeRemaining } from '../../store/slices/sessionSlice';
+import { submitAnswer, startInterview, setTimeRemaining } from '../../store/slices/sessionSlice';
 import MessageBubble from './MessageBubble';
 import QuestionTimer from './QuestionTimer';
 import { Button } from '@/components/ui/button';
@@ -8,12 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Send, AlertCircle, Trophy, CheckCircle, XCircle, RotateCcw ,User, Mail, Phone} from 'lucide-react';
+import { Send, AlertCircle, Trophy, CheckCircle, XCircle, RotateCcw, User, Mail, Phone } from 'lucide-react';
 import { updateCandidateInfo, resetCandidate } from '../../store/slices/candidateSlice';
 import { resetSession } from '../../store/slices/sessionSlice';
 import { api } from '../../services/api';
 import { toast } from "react-hot-toast";
-
 
 interface Message {
   id: string;
@@ -45,6 +45,8 @@ const ChatInterface: React.FC = () => {
   const [candidateDetails, setCandidateDetails] = useState<any>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const previousQuestionId = useRef<string | null>(null);
+  const isResuming = useRef(false);
 
   // Helper function to get max score for difficulty
   const getMaxScoreForDifficulty = (difficulty: string): number => {
@@ -65,6 +67,7 @@ const ChatInterface: React.FC = () => {
   };
 
   const completedInterviewData = useAppSelector((state) => state.session.completedInterviewData);
+  
   useEffect(() => {
     if (currentCandidate?.status === 'completed' && !isActive && !candidateDetails) {
       if (completedInterviewData) {
@@ -150,14 +153,22 @@ const ChatInterface: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-// Add this useEffect in ChatInterface.tsx after the other useEffects
-useEffect(() => {
-  if (currentQuestion && isActive) {
-    // Reset the timer when a new question loads
-    const newTimeLimit = currentQuestion.timeLimit || currentQuestion.time_limit || 60;
-    dispatch(setTimeRemaining(newTimeLimit));
-  }
-}, [currentQuestion?.id, isActive, dispatch]);
+
+  // Fixed timer reset logic - only reset for truly new questions
+  useEffect(() => {
+    if (currentQuestion && isActive && !isResuming.current) {
+      // Only reset timer if this is actually a new question (not resuming)
+      if (previousQuestionId.current !== currentQuestion.id && previousQuestionId.current !== null) {
+        previousQuestionId.current = currentQuestion.id;
+        const newTimeLimit = currentQuestion.timeLimit || currentQuestion.time_limit || 60;
+        dispatch(setTimeRemaining(newTimeLimit));
+      } else if (previousQuestionId.current === null) {
+        // First question and not resuming
+        previousQuestionId.current = currentQuestion.id;
+      }
+    }
+  }, [currentQuestion, isActive, dispatch]);
+
   const handleStartInterview = async () => {
     if (!currentCandidate?.id) return;
     
@@ -193,9 +204,35 @@ useEffect(() => {
       
       if (result.resuming) {
         toast.success('Resuming your interview...');
+        isResuming.current = true;
+        
+        // Calculate and set the correct remaining time when resuming
+        const timeLimit = result.question.timeLimit || result.question.time_limit || 60;
+        const elapsedTime = result.elapsed_time || 0;
+        const remainingTime = Math.max(0, timeLimit - elapsedTime);
+        
+        // Set the remaining time instead of full time
+        dispatch(setTimeRemaining(remainingTime));
+        
+        // Set the current question ID so we don't reset timer again
+        if (result.question) {
+          previousQuestionId.current = result.question.id;
+        }
+        
         setHasInitialized(true);
+        
+        // Reset resuming flag after a short delay
+        setTimeout(() => {
+          isResuming.current = false;
+        }, 1000);
       } else {
         toast.success('Interview started! Good luck!');
+        isResuming.current = false;
+        
+        // For new interview, set the initial timer
+        const timeLimit = result.question?.timeLimit || result.question?.time_limit || 60;
+        dispatch(setTimeRemaining(timeLimit));
+        
         setMessages([{
           id: generateMessageId(),
           type: 'bot',
@@ -295,7 +332,7 @@ useEffect(() => {
       return (
         <Card className="w-full max-w-4xl mx-auto p-8">
           <div className="text-center">
-            <Skeleton className="h-12 w-12 rounded-full mx-auto mb-4" />
+                       <Skeleton className="h-12 w-12 rounded-full mx-auto mb-4" />
             <Skeleton className="h-8 w-64 mx-auto mb-2" />
             <Skeleton className="h-4 w-48 mx-auto mb-6" />
           </div>
@@ -337,7 +374,7 @@ useEffect(() => {
                 return (
                   <Card key={question.id} className="p-4">
                     <div className="mb-2">
-                                            <div className="flex justify-between items-center mb-2">
+                      <div className="flex justify-between items-center mb-2">
                         <h4 className="font-medium">
                           Question {index + 1} ({question.difficulty})
                         </h4>
@@ -417,34 +454,35 @@ useEffect(() => {
     return (
       <Card className="w-full max-w-4xl mx-auto p-8 text-center">
         <h2 className="text-2xl font-semibold mb-4">Ready to Start Your Interview?</h2>
-         {currentCandidate && (
-        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6 max-w-md mx-auto">
-          <h3 className="font-semibold mb-3 text-left text-blue-900">Your Information:</h3>
-          <div className="space-y-2 text-left">
-            <div className="flex items-center gap-3">
-              <User className="h-4 w-4 text-blue-600 flex-shrink-0" />
-              <span className="font-medium text-gray-700 min-w-[60px]">Name:</span>
-              <span className="text-gray-900">{currentCandidate.name || 'Not provided'}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Mail className="h-4 w-4 text-blue-600 flex-shrink-0" />
-              <span className="font-medium text-gray-700 min-w-[60px]">Email:</span>
-              <span className="text-gray-900 break-all">{currentCandidate.email || 'Not provided'}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <Phone className="h-4 w-4 text-blue-600 flex-shrink-0" />
-              <span className="font-medium text-gray-700 min-w-[60px]">Phone:</span>
-              <span className="text-gray-900">{currentCandidate.phone || 'Not provided'}</span>
+        
+        {/* Display candidate information */}
+        {currentCandidate && (
+          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6 max-w-md mx-auto">
+            <h3 className="font-semibold mb-3 text-left text-blue-900">Your Information:</h3>
+            <div className="space-y-2 text-left">
+              <div className="flex items-center gap-3">
+                <User className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                <span className="font-medium text-gray-700 min-w-[60px]">Name:</span>
+                <span className="text-gray-900">{currentCandidate.name || 'Not provided'}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Mail className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                <span className="font-medium text-gray-700 min-w-[60px]">Email:</span>
+                <span className="text-gray-900 break-all">{currentCandidate.email || 'Not provided'}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Phone className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                <span className="font-medium text-gray-700 min-w-[60px]">Phone:</span>
+                <span className="text-gray-900">{currentCandidate.phone || 'Not provided'}</span>
+              </div>
             </div>
           </div>
-          {/* <p className="text-xs text-gray-600 mt-3 text-center italic">
-            Please verify this information is correct
-          </p> */}
-        </div>
-      )}
+        )}
+        
         <p className="text-gray-600 mb-6">
           You'll be asked 6 technical questions about Full Stack Development.
         </p>
+        
         <div className="bg-gray-50 p-4 rounded-lg mb-6 text-left max-w-md mx-auto">
           <h3 className="font-semibold mb-2">Scoring System:</h3>
           <ul className="space-y-1 text-sm text-gray-700">
@@ -454,6 +492,7 @@ useEffect(() => {
             <li className="font-semibold pt-2">Total: 20 marks</li>
           </ul>
         </div>
+        
         <Button 
           onClick={handleStartInterview} 
           disabled={isStarting}
@@ -476,12 +515,12 @@ useEffect(() => {
 
       {isActive && currentQuestion && (
         <>
-         <QuestionTimer
-  key={currentQuestion.id} // Add this to force remount on question change
-  timeLimit={currentQuestion.timeLimit || currentQuestion.time_limit || 60}
-  onTimeUp={handleTimeUp}
-  isPaused={isPaused}
-/>
+          <QuestionTimer
+            key={currentQuestion.id}
+            timeLimit={currentQuestion.timeLimit || currentQuestion.time_limit || 60}
+            onTimeUp={handleTimeUp}
+            isPaused={isPaused}
+          />
           
           <div className="p-4 border-t">
             <div className="mb-2 flex justify-between items-center text-sm text-gray-600">
