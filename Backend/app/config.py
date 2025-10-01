@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # CORS
-    BACKEND_CORS_ORIGINS: list = ["https://ai-powered-interview-assistant-cris-seven.vercel.app/"]
+    BACKEND_CORS_ORIGINS: list = ["http://localhost:5173","https://ai-powered-interview-assistant-cris-seven.vercel.app"]
     
     class Config:
         env_file = ".env"
