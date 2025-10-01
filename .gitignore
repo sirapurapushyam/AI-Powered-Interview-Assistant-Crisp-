@@ -1,0 +1,42 @@
+# --- Python Backend ---
+/Backend/__pycache__/
+/Backend/*.py[cod]
+/Backend/*.pyo
+/Backend/*.pyd
+/Backend/*.so
+
+# Virtual environments
+/Backend/venv/
+/Backend/.venv/
+/Backend/env/
+/Backend/ENV/
+
+# Python packaging
+/Backend/*.egg-info/
+/Backend/*.egg
+/Backend/dist/
+/Backend/build/
+/Backend/.eggs/
+
+# --- React Frontend ---
+/Frontend/node_modules/
+/Frontend/build/
+/Frontend/dist/
+
+/Frontend/npm-debug.log*
+/Frontend/yarn-debug.log*
+/Frontend/yarn-error.log*
+/Frontend/pnpm-debug.log*
+
+/Frontend/.env
+/Frontend/.env.*.local
+
+# --- Shared env (root) ---
+.env
+.env.*.local
+
+# --- IDE & OS ---
+.vscode/
+.idea/
+.DS_Store
+*.log

@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+pydantic-settings
+python-dotenv
+groq
+motor
+redis
+PyPDF2
+python-docx
+websockets
+pymongo
+httpx
+cloudinary
