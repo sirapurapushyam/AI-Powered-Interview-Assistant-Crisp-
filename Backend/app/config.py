@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     CLOUDINARY_API_SECRET: str
     
     # MongoDB
-    MONGODB_URL: str = "mongodb://localhost:27017"
-    DATABASE_NAME: str = "ai_interview"
+    MONGODB_URL: str
+    DATABASE_NAME: str
     
     # Redis
     # REDIS_URL: str = "redis://localhost:6379"
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # CORS
-    BACKEND_CORS_ORIGINS: list = ["http://localhost:5173"]
+    BACKEND_CORS_ORIGINS: list = ["https://ai-powered-interview-assistant-cris-seven.vercel.app/"]
     
     class Config:
         env_file = ".env"
