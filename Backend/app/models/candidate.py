@@ -10,13 +10,12 @@ class CandidateBase(BaseModel):
     phone: str
     resume_text: Optional[str] = None
     resume_url: Optional[str] = None
-    status: str = "collecting-info"  # collecting-info, in-progress, completed
+    status: str = "collecting-info"
     final_score: Optional[float] = None
     summary: Optional[str] = None
 
 
 class Candidate(CandidateBase):
-    # Remove the id field from here - let MongoDB generate it
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
     

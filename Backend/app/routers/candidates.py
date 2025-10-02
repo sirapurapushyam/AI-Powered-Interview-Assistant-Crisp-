@@ -27,7 +27,6 @@ async def get_candidates(
     cursor = database.candidates.find(query).sort(sort_by, sort_direction)
     
     async for candidate in cursor:
-        # Convert ObjectId to string
         candidate["id"] = str(candidate.pop("_id"))
         candidates.append(candidate)
     
@@ -41,15 +40,12 @@ async def get_candidate_details(candidate_id: str):
     if database is None:
         raise HTTPException(status_code=503, detail="Database connection not available")
     
-    # Get candidate
     candidate = await database.candidates.find_one({"_id": ObjectId(candidate_id)})
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate not found")
     
-    # Convert ObjectId to string
     candidate["id"] = str(candidate.pop("_id"))
     
-    # Get interview session
     session = await database.sessions.find_one({"candidate_id": candidate_id})
     if session:
         session["id"] = str(session.pop("_id"))

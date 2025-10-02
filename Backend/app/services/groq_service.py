@@ -17,6 +17,8 @@ class GroqService:
             "hard": 5
         }
     
+    
+    
     async def generate_interview_question(
         self, 
         difficulty: str, 
@@ -24,40 +26,38 @@ class GroqService:
         previous_questions: List[str] = []
     ) -> Dict:
         """Generate interview questions using Groq"""
-        
-        # Different prompts based on difficulty
-        if difficulty == "easy":
-            difficulty_prompt = """For EASY level:
-- Ask questions that can be answered in ONE WORD or a SHORT PHRASE (max 5-10 words)
-- Examples: "What hook manages state in React?", "Which method sends POST requests in Express?", "What command installs npm packages?"
-- The answer should be quick to type within 20 seconds
-- Focus on terminology, command names, method names, or simple facts"""
-            time_limit = 20
-        elif difficulty == "medium":
-            difficulty_prompt = """For MEDIUM level:
-- Ask questions that need 2-3 sentences to answer
-- Focus on explaining concepts, comparing features, or describing simple implementations
-- The candidate should be able to read and answer within 60 seconds"""
-            time_limit = 60
-        else:  # hard
-            difficulty_prompt = """For HARD level:
-- Ask questions about system design, architecture, or complex scenarios
-- Expect detailed explanations or step-by-step approaches
-- The candidate should be able to provide a comprehensive answer within 120 seconds"""
-            time_limit = 120
-        
-        prompt = f"""You are an expert technical interviewer. Generate a {difficulty} {topic} (React/Node.js) interview question.
 
-Previous questions asked (avoid similar ones): {json.dumps(previous_questions[:3]) if previous_questions else "None"}
+        if difficulty == "easy":
+            difficulty_prompt = """EASY LEVEL:
+- Ask direct factual questions with answers in ONE WORD or SHORT PHRASE (max 5–10 words).
+- Must be answerable within 20 seconds.
+- Examples: "What hook manages state in React?", "Which method sends POST requests in Express?", "What command installs npm packages?"."""
+            time_limit = 20
+
+        elif difficulty == "medium":
+            difficulty_prompt = """MEDIUM LEVEL:
+- Ask questions answerable in a single sentence (1 line).
+- Focus on explaining a concept or simple action in React/Node.
+- Must be answerable within 60 seconds.
+- Example: "Explain the difference between useEffect and useLayoutEffect." """
+            time_limit = 60
+
+        else:  # hard
+            difficulty_prompt = """HARD LEVEL:
+- Ask questions answerable in 2–3 lines (concise, but complete).
+- Focus on concepts, reasoning, or small scenarios in React/Node.
+- Must be answerable within 120 seconds.
+- Example: "Describe how React state updates asynchronously and how to handle it properly." """
+            time_limit = 120
+
+        prompt = f"""You are an expert technical interviewer.
+Generate ONE {difficulty.upper()} {topic} (React/Node.js) interview question.
+
+Previous questions (avoid repeats): {json.dumps(previous_questions[:3]) if previous_questions else "None"}
 
 {difficulty_prompt}
 
-Requirements:
-- The question should be clear and concise
-- For easy questions: answerable in one word or short phrase
-- Ensure the question can be read and answered within the time limit
-
-Return ONLY valid JSON in this exact format:
+Output format:
 {{
     "question": "The interview question",
     "expected_topics": ["topic1", "topic2"],
@@ -71,11 +71,11 @@ Return ONLY valid JSON in this exact format:
                 None,
                 lambda: self.client.chat.completions.create(
                     messages=[
-                        {"role": "system", "content": "You are an expert technical interviewer. Always respond with valid JSON only."},
+                        {"role": "system", "content": "You are an expert interviewer. Always respond with VALID JSON ONLY."},
                         {"role": "user", "content": prompt}
                     ],
                     model=self.model,
-                    temperature=0.7,
+                    temperature=0.6,
                 )
             )
             
@@ -85,32 +85,31 @@ Return ONLY valid JSON in this exact format:
             if start_idx != -1 and end_idx > start_idx:
                 json_str = content[start_idx:end_idx]
                 result = json.loads(json_str)
-                result['time_limit'] = time_limit  # Ensure correct time limit
+                result['time_limit'] = time_limit
                 return result
             else:
                 return json.loads(content)
-            
+
         except Exception as e:
             print(f"Error generating question: {e}")
-            # Better fallback questions optimized for time
+            # Fallback short, clear, answerable questions
             fallback_questions = {
                 "easy": [
-                    "What React hook is used for managing component state?",
-                    "Which HTTP method is used to update data in REST APIs?",
-                    "What command creates a new React app?"
+                    "What React hook manages component state?",
+                    "Which HTTP method updates existing data in REST?",
+                    "What command creates a new Node.js project?"
                 ],
                 "medium": [
-                    "Explain the difference between useEffect and useLayoutEffect in React.",
+                    "Explain how React’s virtual DOM improves performance.",
                     "How does middleware work in Express.js?",
-                    "What are the key differences between SQL and NoSQL databases?"
+                    "What is the difference between let and const in JavaScript?"
                 ],
                 "hard": [
-                    "Design a scalable authentication system for a social media platform using JWT tokens and refresh tokens.",
-                    "How would you implement real-time notifications in a MERN stack application serving millions of users?",
-                    "Explain how you would optimize a React application that's experiencing performance issues with large lists."
+                    "Describe how React state updates asynchronously and how to handle it properly.",
+                    "Explain event delegation in JavaScript and why it is useful.",
+                    "How would you prevent memory leaks in a Node.js application?"
                 ]
             }
-            
             import random
             selected = random.choice(fallback_questions.get(difficulty, fallback_questions["easy"]))
             
@@ -120,7 +119,7 @@ Return ONLY valid JSON in this exact format:
                 "hints": [],
                 "time_limit": time_limit
             }
-    
+
     async def evaluate_answer(
         self, 
         question: str, 

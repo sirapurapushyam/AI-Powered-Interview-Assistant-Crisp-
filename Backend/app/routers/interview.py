@@ -1,4 +1,3 @@
-# backend/app/routers/interview.py
 from fastapi import APIRouter, HTTPException, UploadFile, File, Depends
 from typing import Dict, Optional
 from app.models.candidate import Candidate
@@ -31,17 +30,14 @@ async def upload_resume(file: UploadFile = File(...)):
     
     content = await file.read()
     
-    # Upload to Cloudinary first
     try:
         cloudinary_result = await cloudinary_service.upload_resume(content, file.filename)
         resume_url = cloudinary_result["url"]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-    # Parse resume content
     parsed_data = await resume_parser.parse_resume(content, file.content_type)
     
-    # Return parsed data with resume URL
     missing_fields = []
     if not parsed_data.get("name", ""):
         missing_fields.append("name")
@@ -56,7 +52,7 @@ async def upload_resume(file: UploadFile = File(...)):
             "email": parsed_data.get("email", ""),
             "phone": parsed_data.get("phone", ""),
             "resumeText": parsed_data.get("full_text", ""),
-            "resumeUrl": resume_url  # Add this
+            "resumeUrl": resume_url
         },
         "missingFields": missing_fields
     }
@@ -73,11 +69,9 @@ async def create_or_check_candidate(data: Dict[str, str]):
     if not email:
         raise HTTPException(status_code=400, detail="Email is required")
     
-    # Check if candidate exists
     existing_candidate = await database.candidates.find_one({"email": email})
     
     if existing_candidate:
-        # Check if interview is completed
         existing_session = await database.sessions.find_one({
             "candidate_id": str(existing_candidate["_id"]),
             "is_completed": True
@@ -92,25 +86,24 @@ async def create_or_check_candidate(data: Dict[str, str]):
                 "name": existing_candidate.get("name", ""),
                 "email": existing_candidate.get("email", ""),
                 "phone": existing_candidate.get("phone", ""),
-                "resumeUrl": existing_candidate.get("resume_url", ""),  # Include resume URL
+                "resumeUrl": existing_candidate.get("resume_url", ""),
                 "final_score": existing_candidate.get("final_score"),
                 "summary": existing_candidate.get("summary", "")
             }
         }
     
-    # Create new candidate with resume URL
+   
     candidate_data = {
         "name": data.get("name", ""),
         "email": data.get("email", ""),
         "phone": data.get("phone", ""),
         "resume_text": data.get("resumeText", ""),
-        "resume_url": data.get("resumeUrl", ""),  # Add resume URL
+        "resume_url": data.get("resumeUrl", ""), 
         "status": "ready",
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow()
     }
     
-    # Save to database
     result = await database.candidates.insert_one(candidate_data)
     candidate_id = str(result.inserted_id)
     
@@ -129,16 +122,13 @@ async def update_candidate_info(candidate_id: str, data: Dict[str, str]):
     if database is None:
         raise HTTPException(status_code=503, detail="Database connection not available")
     
-    # Get current candidate
     candidate = await database.candidates.find_one({"_id": ObjectId(candidate_id)})
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate not found")
     
-    # Filter out fields that shouldn't be updated
     update_data = {}
     
     for key, value in data.items():
-        # Skip if value is empty
         if not value:
             continue
             
