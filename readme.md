@@ -58,7 +58,6 @@ cd AI-Powered-Interview-Assistant-Crisp-
 #### Navigate to Backend Directory
 ```bash
 cd backend
-Create Virtual Environment
 ```
 
 ```bash
@@ -82,8 +81,9 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-Edit the .env file with your credentials
 ```
+Edit the .env file with your credentials
+
 
 ### 3. Setup Frontend
 
@@ -100,11 +100,11 @@ yarn install
 #### Setup Environment Variables
 ```bash
 cp .env.example .env
-Edit the .env file
 ```
+Edit the .env file
 
 
-### 🏃‍♂️ Running the Application
+###  Running the Application
 #### Start Backend Server
 ```bash
 cd backend
@@ -121,9 +121,9 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 #### The backend will be available at:
-API: http://localhost:8000
-API Documentation: http://localhost:8000/docs
-Alternative API Docs: http://localhost:8000/redoc
+####  API: http://localhost:8000 
+#### API Documentation: http://localhost:8000/docs
+#### Alternative API Docs: http://localhost:8000/redoc
 
 #### Start Frontend Development Server
 
